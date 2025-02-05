@@ -170,7 +170,7 @@ class ExcelViewer(QMainWindow):
             data_body = self.data[1:].copy()
 
             # Ensure the relevant columns exist
-            required_columns = ["so_number", "item_desc", "so_qty"]
+            required_columns = ["so_number", "item_desc", "so_qty", "orderamt"]
             for col in required_columns:
                 if col not in headers.values:
                     QMessageBox.critical(self, "Error", f"Column '{col}' is missing.")
@@ -179,13 +179,24 @@ class ExcelViewer(QMainWindow):
             # Assign column names for processing
             data_body.columns = headers
 
-            # Convert `so_qty` to numeric for aggregation
+            # Convert `so_qty` and `orderamt` to numeric for calculations
             data_body["so_qty"] = pd.to_numeric(data_body["so_qty"], errors="coerce").fillna(0)
+            data_body["orderamt"] = pd.to_numeric(data_body["orderamt"], errors="coerce").fillna(0)
+
+            # Adjust orderamt based on so_qty before grouping
+            data_body["orderamt"] = data_body.apply(
+                lambda row: row["orderamt"] / row["so_qty"] if row["so_qty"] > 1 else row["orderamt"],
+                axis=1
+            )
 
             # Group by `so_number` and `item_desc`, summing up `so_qty`
             grouped_data = (
                 data_body.groupby(["so_number", "item_desc"], as_index=False)
-                .agg({"so_qty": "sum", **{col: "first" for col in data_body.columns if col not in required_columns}})
+                .agg({
+                    "so_qty": "sum",
+                    "orderamt": "first",  # Take the already adjusted orderamt
+                    **{col: "first" for col in data_body.columns if col not in required_columns}
+                })
             )
 
             # Reinsert headers
