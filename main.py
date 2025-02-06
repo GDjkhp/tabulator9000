@@ -53,8 +53,8 @@ class ExcelViewer(QMainWindow):
         self.filter_columns_button.clicked.connect(self.filter_columns_gfk)
         button_layout_2.addWidget(self.filter_columns_button)
 
-        self.remove_duplicates_button = QPushButton("Merge Duplicates")
-        self.remove_duplicates_button.clicked.connect(self.remove_duplicates)
+        self.remove_duplicates_button = QPushButton("Merge Duplicates (GFK)")
+        self.remove_duplicates_button.clicked.connect(lambda: self.remove_duplicates(["so_number", "item_desc"]))
         button_layout_2.addWidget(self.remove_duplicates_button)
 
         self.clear_button = QPushButton("Clear Data")
@@ -142,7 +142,7 @@ class ExcelViewer(QMainWindow):
         self.save_undo_state()
 
         # Specify the columns to keep
-        columns_to_keep = ["so_number", "item_number", "item_desc", "so_qty", "orderamt"]
+        columns_to_keep = ["so_number", "item_desc", "item_number", "so_qty", "orderamt"]
 
         try:
             # Filter columns based on their names
@@ -155,7 +155,7 @@ class ExcelViewer(QMainWindow):
         except KeyError:
             QMessageBox.critical(self, "Error", "Some required columns are missing.")
 
-    def remove_duplicates(self):
+    def remove_duplicates(self, filters):
         if self.data is None:
             QMessageBox.warning(self, "No Data", "No data available to process.")
             return
@@ -189,9 +189,9 @@ class ExcelViewer(QMainWindow):
                 axis=1
             )
 
-            # Group by `so_number` and `item_desc`, summing up `so_qty`
+            # Group by filters, summing up `so_qty`
             grouped_data = (
-                data_body.groupby(["so_number", "item_desc"], as_index=False)
+                data_body.groupby(filters, as_index=False)
                 .agg({
                     "so_qty": "sum",
                     "orderamt": "first",  # Take the already adjusted orderamt
