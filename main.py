@@ -46,7 +46,7 @@ class ExcelViewer(QMainWindow):
         self.copy_button = QPushButton("Copy Cells")
         self.copy_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarNormalButton))
         self.copy_button.clicked.connect(self.copy_cells)
-        button_layout.addWidget(self.copy_button)
+        # button_layout.addWidget(self.copy_button)
 
         self.filter_columns_button = QPushButton("Filter Columns (GFK)")
         self.filter_columns_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarUnshadeButton))
@@ -75,6 +75,111 @@ class ExcelViewer(QMainWindow):
 
         # Ensure window is always on top
         # self.setWindowFlag(Qt.WindowStaysOnTopHint)
+
+        # Drake mode
+        self.toggle_dark_mode(True)
+
+    def toggle_dark_mode(self, enabled):
+        if enabled:
+            # Apply dark mode style
+            self.setStyleSheet("""
+                QWidget {
+                    background-color: #1e1e1e;
+                    color: #00ff00;  /* Green text */
+                }
+
+                QTableWidget {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                    gridline-color: #3a3a3a;
+                    selection-background-color: #3a539b;
+                    selection-color: #ffffff;
+                }
+
+                QTableWidget::item {
+                    border: 0px;
+                    padding: 5px;
+                }
+
+                QTableWidget::item:selected {
+                    background-color: #3a539b;
+                }
+
+                QHeaderView::section {
+                    background-color: #2b2b2b;
+                    color: #00ff00;
+                    border: 1px solid #3a3a3a;
+                    padding: 5px;
+                }
+
+                QPushButton {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                    border: 1px solid #3a3a3a;
+                    border-radius: 3px;
+                    padding: 5px;
+                    min-width: 80px;
+                }
+
+                QPushButton:hover {
+                    background-color: #3a3a3a;
+                }
+
+                QPushButton:pressed {
+                    background-color: #454545;
+                }
+
+                QLineEdit {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                    border: 1px solid #3a3a3a;
+                    border-radius: 3px;
+                    padding: 3px;
+                }
+
+                QComboBox {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                    border: 1px solid #3a3a3a;
+                    border-radius: 3px;
+                    padding: 3px;
+                }
+
+                QComboBox QAbstractItemView {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                    selection-background-color: #3a539b;
+                }
+
+                QLabel {
+                    color: #00ff00;
+                }
+
+                QCheckBox {
+                    color: #00ff00;
+                }
+
+                QRadioButton {
+                    color: #00ff00;
+                }
+
+                QMenuBar {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                }
+
+                QMenu {
+                    background-color: #2d2d2d;
+                    color: #00ff00;
+                }
+
+                QMenu::item:selected {
+                    background-color: #3a539b;
+                }
+            """)
+        else:
+            # Reset to default style
+            self.setStyleSheet("")
 
     def center_window(self):
         frame_geometry = self.frameGeometry()
@@ -133,7 +238,7 @@ class ExcelViewer(QMainWindow):
                 return df
             except: pass
         raise ValueError(f"Recovery failed")
-    
+
     def filter_columns_gfk(self):
         if self.data is None:
             QMessageBox.warning(self, "No Data", "No data available to filter.")
